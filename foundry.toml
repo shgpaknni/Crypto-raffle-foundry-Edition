@@ -1,0 +1,19 @@
+[profile.default]
+src = "src"
+out = "out"
+
+libs = ["lib"]
+remappings = [
+    'foundry-devops/=lib/foundry-devops/src/',
+
+    '@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/',
+    '@forge-std/=libs/forge-std/',
+    '@solmate=libs/solmate/src/',
+
+]
+fs_permissions = [
+    { access = "read", path = "./broadcast" },
+    { access = "read", path = "./reports" },
+]
+[fuzz]
+runs = 1000
