@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CryptoRaffle Dashboard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <h1>🎟️ CryptoRaffle Dashboard</h1>
+        <p>Enter rounds, inspect status, and monitor live raffle metrics.</p>
+      </header>
+
+      <section class="card controls">
+        <div class="row">
+          <label for="contractAddress">Raffle Contract</label>
+          <input id="contractAddress" placeholder="0x..." />
+        </div>
+        <div class="row split">
+          <button id="connectBtn">Connect Wallet</button>
+          <button id="refreshBtn">Refresh</button>
+          <button id="enterBtn">Enter Raffle</button>
+        </div>
+        <p id="wallet" class="muted">Wallet: not connected</p>
+        <p id="network" class="muted">Network: unknown</p>
+      </section>
+
+      <section class="grid">
+        <article class="card stat"><h3>Entrance Fee</h3><p id="entranceFee">-</p></article>
+        <article class="card stat"><h3>Prize Pool</h3><p id="prizePool">-</p></article>
+        <article class="card stat"><h3>Current Round</h3><p id="roundId">-</p></article>
+        <article class="card stat"><h3>Players</h3><p id="players">-</p></article>
+        <article class="card stat"><h3>State</h3><p id="state">-</p></article>
+        <article class="card stat"><h3>Recent Winner</h3><p id="winner">-</p></article>
+      </section>
+
+      <section class="card">
+        <h3>Activity</h3>
+        <pre id="log" class="log">Ready.</pre>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

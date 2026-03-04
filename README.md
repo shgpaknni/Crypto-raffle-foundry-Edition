@@ -1,67 +1,84 @@
 # CryptoRaffle - Foundry Edition
 
-**CryptoRaffle** is a smart contract system built on the Ethereum blockchain, designed for decentralized raffles and lotteries. The contract allows users to participate in raffles by contributing ETH, and it integrates with Chainlink's VRF for randomness and automation services.
+A decentralized raffle system built with Foundry + Chainlink VRF.
 
-# Decentralized CryptoRaffle System with Chainlink VRF
+## Smart Contract Features
 
-## Overview
-
-This project is a decentralized raffle  built on Ethereum, utilizing Chainlink's Verifiable Random Function (VRF) to ensure fair and transparent winner selection. Participants enter the raffle by paying an entrance fee, and a winner is randomly chosen using Chainlink VRF, which provides cryptographically secure randomness.
-
-## Key Components
-
-### CryptoRaffle
-
-- **Entry Mechanism**: Users can enter the raffle by paying a set `entranceFee`.
-- **Random Winner Selection**: Chainlink VRF generates a provably random number to select the raffle winner.
-- **Time-based Execution**: A configurable `interval` ensures that raffles are drawn only after a specified period.
-- **Upkeep**: Chainlink Keepers automate winner selection based on predefined conditions.
-
-### Chainlink VRF Integration
-
-- Chainlink VRF ensures randomness in winner selection, with requests handled through a subscription model. The contract uses a subscription ID funded with LINK tokens to pay for VRF requests.
-
-### Helper Contracts and Mock Implementations
-
-- **HelperConfig**: Retrieves network-specific configurations such as VRF Coordinator address, subscription ID, and entrance fees.
-- **Mock Contracts**: Simulate Chainlink VRF and LINK token behavior during local testing with Anvil.
-
-### Testing and Deployment
-
-- **Testing**: Comprehensive unit tests are written using Foundry, covering various scenarios including edge cases, randomness verification, and contract state changes.
-- **Deployment Scripts**: Automated scripts for deploying the raffle contract to both local and public networks, including the setup of VRF subscriptions and funding.
-
-### LINK Token Management
-
-- A custom ERC20-compatible `LinkToken` contract is used to manage LINK transfers and simulate token behavior during local tests.
-
-### Events and Logs
-
-- Key events like raffle entries and winner selections are logged for transparency.
-
-## Installation and Setup
-
-### Prerequisites
-
-- Ensure you have [Foundry](https://book.getfoundry.sh/) installed.
-
-### Install Dependencies
-
-```bash
-make install
+- Enter raffle with `entranceFee`.
+- Chainlink VRF-based random winner selection.
+- Time-based automation using upkeep checks.
+- Round-aware protections:
+  - one entry per address per round,
+  - explicit round IDs,
+  - richer entry event payloads.
 
 ## Project Structure
 
-```plaintext
-├── src
-│   ├── Raffle.sol                 # Main contract for raffle management
-├── script
-│   ├── DeployRaffle.s.sol         # Script for deploying the Raffle contract
-│   ├── Interactions.s.sol         # Script for interacting with the contract (entering raffle, etc.)
-│   ├── HelperConfig.s.sol         # Configuration script for Chainlink VRF
-├── test
-│   ├── RaffleTest.t.sol           # Unit tests for the Raffle contract
-│   ├── IntegrationTest.t.sol      # Integration tests for Raffle
-│   ├── mocks
-│       └── MockV3Aggregator.sol   # Mock price feed contract for testing
-└── .env                           # Environment variables (e.g., RPC URL, private key, API key)
+```text
+.
+├── src/
+│   └── Raffle.sol
+├── script/
+│   ├── DeployRaffle.s.sol
+│   ├── HelperConfig.s.sol
+│   └── interactions.s.sol
+├── test/
+│   ├── uint/RaffleTest.t.sol
+│   └── integration/Integration.t.sol
+└── frontend/
+    ├── index.html
+    ├── app.js
+    └── styles.css
+```
+
+## Getting Started (Contracts)
+
+Prerequisite: [Foundry](https://book.getfoundry.sh/).
+
+```bash
+make install
+forge build
+forge test
+```
+
+## Frontend (New)
+
+A lightweight dashboard is included in `frontend/`.
+
+### What it does
+
+- Connects wallet (MetaMask).
+- Shows raffle metrics:
+  - entrance fee,
+  - prize pool,
+  - current round,
+  - player count,
+  - raffle state,
+  - recent winner.
+- Lets users enter the raffle with the exact entrance fee.
+- Shows activity log and whether the connected account already entered this round.
+
+### Run it locally
+
+From repo root:
+
+```bash
+python3 -m http.server 8080
+```
+
+Then open:
+
+- `http://localhost:8080/frontend/`
+
+Set your deployed raffle contract address in the input and click **Connect Wallet**.
+
+## Push and PR Quick Commands
+
+If your branch has the latest commits and `origin` is configured:
+
+```bash
+git checkout work
+git push -u origin work
+```
+
+Then open GitHub and create a PR from `work` into your target base branch.
