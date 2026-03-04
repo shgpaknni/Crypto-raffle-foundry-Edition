@@ -34,6 +34,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__sendMoreToRaffle();
     error Raffle__transferFail();
     error Raffle__raffleNotOpen();
+    error Raffle__duplicateEntry();
     error Raffle__upKeepNotNeeded(
         uint256 balance,
         uint256 playerslength,
@@ -52,13 +53,19 @@ contract Raffle is VRFConsumerBaseV2Plus {
     uint256 private immutable i_subscriptionId;
     uint32 private immutable i_callBackGasLimit;
     address payable[] private s_players;
+    mapping(address player => uint256 roundId) private s_lastEnteredRound;
     address private s_recentWinner;
     RaffleState private s_raffleState;
     //@dev duration of lottery in second
     uint256 private immutable i_interval;
     uint256 private s_lastTimestamp;
+    uint256 private s_roundId;
     /**Events */
-    event RaffleEntered(address indexed player);
+    event RaffleEntered(
+        address indexed player,
+        uint256 indexed roundId,
+        uint256 amount
+    );
     event WinnerPicked(address indexed winner);
     event RequestedRaffleWinner(uint256 indexed requestId);
 
@@ -76,12 +83,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
         i_subscriptionId = subscriptionId;
         i_callBackGasLimit = callBackGasLimit;
         s_lastTimestamp = block.timestamp;
+        s_roundId = 1;
         s_raffleState = RaffleState.OPEN;
     }
 
     function enterRaffle() external payable {
-        console.log("hello");
-        console.log(msg.value);
         // require(msg.value>=i_entranceFee,"not enough ETH!")
         if (msg.value < i_entranceFee) {
             revert Raffle__sendMoreToRaffle();
@@ -89,8 +95,12 @@ contract Raffle is VRFConsumerBaseV2Plus {
         if (s_raffleState != RaffleState.OPEN) {
             revert Raffle__raffleNotOpen();
         }
+        if (s_lastEnteredRound[msg.sender] == s_roundId) {
+            revert Raffle__duplicateEntry();
+        }
+        s_lastEnteredRound[msg.sender] = s_roundId;
         s_players.push(payable(msg.sender));
-        emit RaffleEntered(msg.sender);
+        emit RaffleEntered(msg.sender, s_roundId, msg.value);
     }
 
     /**
@@ -156,6 +166,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
         s_recentWinner = recentWinner;
         s_raffleState = RaffleState.OPEN;
         s_players = new address payable[](0);
+        s_roundId++;
         s_lastTimestamp = block.timestamp;
         emit WinnerPicked(s_recentWinner); //put it here cause its more gas efficent
 
@@ -184,5 +195,25 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getRecentWinner() external view returns (address) {
         return s_recentWinner;
+    }
+
+    function getRoundId() external view returns (uint256) {
+        return s_roundId;
+    }
+
+    function getNumberOfPlayers() external view returns (uint256) {
+        return s_players.length;
+    }
+
+    function getPrizePool() external view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function hasEnteredCurrentRound(address player)
+        external
+        view
+        returns (bool)
+    {
+        return s_lastEnteredRound[player] == s_roundId;
     }
 }

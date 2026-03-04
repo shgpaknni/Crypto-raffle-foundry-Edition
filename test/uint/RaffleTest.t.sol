@@ -21,7 +21,11 @@ contract RaffleTest is codeConstant, Test {
     address public PLAYER = makeAddr("player");
     uint256 public STARTING_PLAYER_BALANCE = 10 ether;
 
-    event RaffleEntered(address indexed player);
+    event RaffleEntered(
+        address indexed player,
+        uint256 indexed roundId,
+        uint256 amount
+    );
     event WinnerPicked(address indexed winner);
 
     function setUp() external {
@@ -58,9 +62,17 @@ contract RaffleTest is codeConstant, Test {
 
     function testEnteringRaffleEmitsEvent() public {
         vm.prank(PLAYER);
-        vm.expectEmit(true, false, false, false, address(raffle));
-        emit RaffleEntered(PLAYER);
+        vm.expectEmit(true, true, false, true, address(raffle));
+        emit RaffleEntered(PLAYER, raffle.getRoundId(), entranceFee);
         raffle.enterRaffle{value: entranceFee}();
+    }
+
+    function testPlayerCannotEnterTwiceInSameRound() public {
+        vm.startPrank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.expectRevert(Raffle.Raffle__duplicateEntry.selector);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.stopPrank();
     }
 
     function testDontAllowPlayerWhileCalculatingWinner() public {
@@ -241,5 +253,25 @@ contract RaffleTest is codeConstant, Test {
         assert(uint256(raffleState) == 0);
         assert(winnerBalance == startingBalance + prize);
         assert(endingTimeStamp > startingTimeStamp);
+    }
+
+    function testWinnerCanEnterAgainInNewRound() public raffleEntered skipFork {
+        vm.recordLogs();
+        raffle.performUpkeep("");
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        bytes32 requestId = entries[1].topics[1];
+
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(
+            uint256(requestId),
+            address(raffle)
+        );
+
+        address winner = raffle.getRecentWinner();
+        vm.deal(winner, 1 ether);
+        vm.prank(winner);
+        raffle.enterRaffle{value: entranceFee}();
+
+        assertTrue(raffle.hasEnteredCurrentRound(winner));
+        assertEq(raffle.getNumberOfPlayers(), 1);
     }
 }
