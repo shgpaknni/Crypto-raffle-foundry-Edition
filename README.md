@@ -71,3 +71,14 @@ Then open:
 - `http://localhost:8080/frontend/`
 
 Set your deployed raffle contract address in the input and click **Connect Wallet**.
+
+## Push and PR Quick Commands
+
+If your branch has the latest commits and `origin` is configured:
+
+```bash
+git checkout work
+git push -u origin work
+```
+
+Then open GitHub and create a PR from `work` into your target base branch.
